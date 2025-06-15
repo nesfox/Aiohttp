@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:14.3-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: netology_flask
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d netology_flask"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    environment:
+      PG_DSN: "postgresql+asyncpg://app:1234@db:5432/netology_flask"
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
